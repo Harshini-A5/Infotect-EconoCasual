@@ -1,0 +1,17 @@
+
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Secret environment variables
+.env
+
+# Raw dataset - keep it local
+data/raw/
+
+# Jupyter Notebook temporary files
+.ipynb_checkpoints/
