@@ -13,5 +13,9 @@ __pycache__/
 # Raw dataset - keep it local
 data/raw/
 
+# Processed dataset - keep it local for now
+data/processed/
+
+
 # Jupyter Notebook temporary files
 .ipynb_checkpoints/

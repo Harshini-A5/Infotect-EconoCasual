@@ -32,3 +32,11 @@ else:
     print(df.describe(include="all").to_string())
 
     print("\nDataset inspection completed!")
+
+print("\n--- COMPLETE COLUMN NAMES ---")
+
+for i, column in enumerate(df.columns, start=1):
+    print(f"{i}. {column}")
+
+print("\n--- FIRST 3 ROWS ---")
+print(df.head(3).to_string(index=False))
