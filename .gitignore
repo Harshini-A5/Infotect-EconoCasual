@@ -19,3 +19,9 @@ data/processed/
 
 # Jupyter Notebook temporary files
 .ipynb_checkpoints/
+
+# Generated reports and model outputs
+reports/results/
+
+# Generated plot from the demand evaluation
+reports/figures/actual_vs_predicted_demand.png
