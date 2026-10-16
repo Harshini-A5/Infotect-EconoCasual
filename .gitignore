@@ -28,3 +28,9 @@ reports/figures/actual_vs_predicted_demand.png
 
 # Generated reports saved accidentally under data
 data/reports/
+
+# Trained model artifacts
+models/
+
+# Generated sensitivity chart
+reports/figures/price_effect_sensitivity.png
