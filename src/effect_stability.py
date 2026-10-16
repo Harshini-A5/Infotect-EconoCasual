@@ -1,4 +1,4 @@
-
+from pathlib import Path
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import KFold, cross_val_predict
@@ -78,14 +78,31 @@ def run_stability_check():
             "Estimated_Price_Effect": effect,
         })
 
+    # results = pd.DataFrame(rows)
+    # print(results.to_string(index=False))
+    # print(
+    #     "\nNote: These are sensitivity checks, not independent "
+    #     "confirmations of causality."
+    # )
+    # return results
     results = pd.DataFrame(rows)
     print(results.to_string(index=False))
+
+    output_path = (
+        Path(__file__).resolve().parent.parent
+        / "reports"
+        / "results"
+        / "effect_stability.csv"
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    results.to_csv(output_path, index=False)
+
+    print(f"\nResults saved to: {output_path}")
     print(
         "\nNote: These are sensitivity checks, not independent "
         "confirmations of causality."
     )
     return results
-
 
 if __name__ == "__main__":
     run_stability_check()
