@@ -25,3 +25,6 @@ reports/results/
 
 # Generated plot from the demand evaluation
 reports/figures/actual_vs_predicted_demand.png
+
+# Generated reports saved accidentally under data
+data/reports/
