@@ -159,7 +159,7 @@ with st.form("demand_prediction_form"):
     )
 
     submitted = st.form_submit_button("Predict Demand")
-
+    
 if submitted:
     input_data = {
         "Competitor Pricing": competitor_pricing,
@@ -177,60 +177,43 @@ if submitted:
         "Region_West": int(region == "West"),
     }
 
+    # Predict demand for the selected promotion setting
     input_df = pd.DataFrame([input_data])[features]
     prediction = model.predict(input_df)[0]
 
     st.success(f"Estimated Demand: {prediction:.2f} units")
-    st.caption(
-        "This is a model-based estimate, not a guaranteed sales outcome."
+
+    # Compare predictions with promotion off and on
+    no_promotion_data = input_data.copy()
+    no_promotion_data["Promotion"] = 0
+
+    promotion_data = input_data.copy()
+    promotion_data["Promotion"] = 1
+
+    comparison_df = pd.DataFrame(
+        [no_promotion_data, promotion_data]
+    )[features]
+
+    comparison_predictions = model.predict(comparison_df)
+
+    chart_df = pd.DataFrame({
+        "Scenario": ["No Promotion", "Promotion Active"],
+        "Predicted Demand": comparison_predictions
+    }).set_index("Scenario")
+
+    st.subheader("Promotion Impact: Predicted Demand")
+    st.bar_chart(chart_df)
+
+    difference = comparison_predictions[1] - comparison_predictions[0]
+    st.metric(
+        "Predicted Demand Difference",
+        f"{difference:.2f} units",
+        help="Promotion-active prediction minus no-promotion prediction."
     )
 
-# DML analysis section
-st.divider()
-st.header("2. DML Price-Effect Analysis")
+    st.caption(
+        "This chart compares model predictions. The difference is not "
+        "proof that a promotion causes demand to change by this amount."
+    )
 
-st.write(
-    "These statistics come from the saved DML analysis of your dataset. "
-    "They are not recalculated for each form submission."
-)
 
-col1, col2, col3 = st.columns(3)
-
-col1.metric(
-    "Estimated Price Effect",
-    f"{dml['Estimated_Price_Effect']:.4f}"
-)
-col2.metric(
-    "Robust Standard Error",
-    f"{dml['Robust_Standard_Error_HC1']:.4f}"
-)
-col3.metric(
-    "Observations",
-    f"{int(dml['Observations']):,}"
-)
-
-st.subheader("95% Confidence Interval")
-
-lower = float(dml["CI_95_Lower"])
-upper = float(dml["CI_95_Upper"])
-estimate = float(dml["Estimated_Price_Effect"])
-
-st.write(f"Lower bound: **{lower:.4f}**")
-st.write(f"Estimated effect: **{estimate:.4f}**")
-st.write(f"Upper bound: **{upper:.4f}**")
-
-st.progress(1.0 if lower > 0 or upper < 0 else 0.0)
-
-p_value = float(dml["P_Value"])
-st.write(
-    "P-value: **"
-    + (f"{p_value:.2e}" if p_value != 0 else "Below the CSV's displayed precision")
-    + "**"
-)
-
-st.caption(
-    "Interpretation depends on how price treatment and demand outcome "
-    "are defined. Statistical significance alone does not prove causality. "
-    "The DML estimate is a dataset-level result, not a personalized "
-    "price recommendation for the selected inputs."
-)
