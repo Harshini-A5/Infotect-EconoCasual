@@ -1,10 +1,21 @@
-
+import requests
 import joblib
 import streamlit as st
 import pandas as pd
 import numpy as np
 from pathlib import Path
+API_URL = "http://127.0.0.1:8000/predict"
 
+
+def predict_demand_api(data):
+    response = requests.post(
+        API_URL,
+        json=data,
+        timeout=10
+    )
+    response.raise_for_status()
+    result = response.json()
+    return result["predicted_demand"]
 PROJECT_ROOT = Path(__file__).resolve().parent
 MODEL_PATH = PROJECT_ROOT / "models" / "demand_prediction_model.joblib"
 DML_RESULTS_PATH = (
@@ -124,6 +135,15 @@ input_data = {
     "Region_West": int(region == "West"),
 }
 
+api_input = {
+    "competitor_pricing": float(competitor_pricing),
+    "promotion": int(promotion),
+    "inventory_level": int(inventory_level),
+    "seasonality": seasonality,
+    "category": category,
+    "region": region,
+}
+
 
 # 4. Prediction helper with input and output validation
 def predict_demand(data_rows):
@@ -151,7 +171,7 @@ def predict_demand(data_rows):
 # 5. Predict demand and compare promotion scenarios
 if submitted:
     try:
-        prediction = predict_demand([input_data])[0]
+        prediction = predict_demand_api(api_input)
 
         st.success(f"Estimated Demand: {prediction:.2f} units")
 
@@ -167,29 +187,6 @@ if submitted:
 
         comparison_predictions = predict_demand(
             [no_promotion_data, promotion_data]
-        )
-
-        chart_df = pd.DataFrame({
-            "Scenario": ["No Promotion", "Promotion Active"],
-            "Predicted Demand": comparison_predictions
-        }).set_index("Scenario")
-
-        st.subheader("Promotion Impact: Predicted Demand")
-        st.bar_chart(chart_df)
-
-        difference = (
-            comparison_predictions[1] - comparison_predictions[0]
-        )
-
-        st.metric(
-            "Predicted Demand Difference",
-            f"{difference:.2f} units",
-            help="Promotion-active prediction minus no-promotion prediction."
-        )
-
-        st.caption(
-            "This chart compares model predictions. The difference is not "
-            "proof that a promotion causes demand to change by this amount."
         )
 
     except Exception as exc:

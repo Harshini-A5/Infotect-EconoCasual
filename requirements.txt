@@ -6,3 +6,5 @@ matplotlib
 statsmodels
 fastapi
 uvicorn
+
+requests
