@@ -1,88 +1,8 @@
 
-# import joblib
-# import streamlit as st
-# import pandas as pd
-# from pathlib import Path
-
-# PROJECT_ROOT = Path(__file__).resolve().parent
-# MODEL_PATH = PROJECT_ROOT / "models" / "demand_prediction_model.joblib"
-
-# st.set_page_config(
-#     page_title="EconoCausal",
-#     page_icon="📊",
-#     layout="centered"
-# )
-
-# st.title("EconoCausal")
-# st.subheader("Demand Prediction Dashboard")
-# st.write(
-#     "Enter market and product details to estimate customer demand."
-# )
-
-# @st.cache_resource
-# def load_model():
-#     saved = joblib.load(MODEL_PATH)
-#     return saved["model"], saved["features"]
-
-# try:
-#     model, features = load_model()
-# except FileNotFoundError:
-#     st.error("Model file not found. Please train the model first.")
-#     st.stop()
-
-# with st.form("demand_prediction_form"):
-#     st.subheader("Product and Market Details")
-
-#     competitor_pricing = st.number_input(
-#         "Competitor Pricing", min_value=0.0, value=100.0
-#     )
-#     promotion = st.selectbox("Promotion", [0, 1])
-#     inventory_level = st.number_input(
-#         "Inventory Level", min_value=0, value=100
-#     )
-
-#     seasonality = st.selectbox(
-#         "Season", ["Autumn", "Spring", "Summer", "Winter"]
-#     )
-#     category = st.selectbox(
-#         "Product Category",
-#         ["Electronics", "Furniture", "Groceries", "Toys"]
-#     )
-#     region = st.selectbox(
-#         "Region", ["North", "South", "West"]
-#     )
-
-#     submitted = st.form_submit_button("Predict Demand")
-
-# if submitted:
-#     input_data = {
-#         "Competitor Pricing": competitor_pricing,
-#         "Promotion": promotion,
-#         "Inventory Level": inventory_level,
-#         "Seasonality_Spring": int(seasonality == "Spring"),
-#         "Seasonality_Summer": int(seasonality == "Summer"),
-#         "Seasonality_Winter": int(seasonality == "Winter"),
-#         "Category_Electronics": int(category == "Electronics"),
-#         "Category_Furniture": int(category == "Furniture"),
-#         "Category_Groceries": int(category == "Groceries"),
-#         "Category_Toys": int(category == "Toys"),
-#         "Region_North": int(region == "North"),
-#         "Region_South": int(region == "South"),
-#         "Region_West": int(region == "West"),
-#     }
-
-#     input_df = pd.DataFrame([input_data])[features]
-#     prediction = model.predict(input_df)[0]
-
-#     st.success(f"Estimated Demand: {prediction:.2f} units")
-#     st.caption(
-#         "This is a model-based estimate, not a guaranteed sales outcome."
-#     )
-
-
 import joblib
 import streamlit as st
 import pandas as pd
+import numpy as np
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -104,30 +24,49 @@ st.write(
     "calculated using Double Machine Learning (DML)."
 )
 
-# Load the demand prediction model
+
+# 1. Load the trained demand prediction model
 @st.cache_resource
 def load_model():
     saved = joblib.load(MODEL_PATH)
+
+    if not isinstance(saved, dict) or "model" not in saved or "features" not in saved:
+        raise ValueError(
+            "Invalid model file. Please retrain the demand prediction model."
+        )
+
     return saved["model"], saved["features"]
+
 
 try:
     model, features = load_model()
 except FileNotFoundError:
     st.error("Demand model not found. Please train the model first.")
     st.stop()
+except Exception as exc:
+    st.error(f"Could not load the demand model: {exc}")
+    st.stop()
 
-# Load the exported DML results
+
+# 2. Load DML results
 try:
     dml_results = pd.read_csv(DML_RESULTS_PATH)
+
+    if dml_results.empty:
+        st.error("The DML results file is empty.")
+        st.stop()
+
     dml = dml_results.iloc[0]
+
 except FileNotFoundError:
     st.error("DML results file not found in reports/results.")
     st.stop()
-except (pd.errors.EmptyDataError, IndexError):
-    st.error("The DML results file is empty.")
+except (pd.errors.EmptyDataError, pd.errors.ParserError) as exc:
+    st.error(f"Could not read the DML results file: {exc}")
     st.stop()
 
-# Demand prediction section
+
+# 3. Demand prediction form
 st.header("1. Demand Prediction")
 
 with st.form("demand_prediction_form"):
@@ -136,88 +75,128 @@ with st.form("demand_prediction_form"):
     competitor_pricing = st.number_input(
         "Competitor Pricing",
         min_value=0.0,
-        value=100.0
+        value=100.0,
+        step=5.0
     )
+
     promotion = st.selectbox("Promotion", [0, 1])
+
     inventory_level = st.number_input(
         "Inventory Level",
         min_value=0,
-        value=100
+        value=100,
+        step=10
     )
 
     seasonality = st.selectbox(
         "Season",
         ["Autumn", "Spring", "Summer", "Winter"]
     )
+
     category = st.selectbox(
         "Product Category",
         ["Electronics", "Furniture", "Groceries", "Toys"]
     )
+
     region = st.selectbox(
         "Region",
         ["North", "South", "West"]
     )
 
     submitted = st.form_submit_button("Predict Demand")
-    
+
+
+# Always build the current inputs after the form.
+# Both prediction features can use these inputs independently.
+input_data = {
+    "Competitor Pricing": competitor_pricing,
+    "Promotion": promotion,
+    "Inventory Level": inventory_level,
+    "Seasonality_Spring": int(seasonality == "Spring"),
+    "Seasonality_Summer": int(seasonality == "Summer"),
+    "Seasonality_Winter": int(seasonality == "Winter"),
+    "Category_Electronics": int(category == "Electronics"),
+    "Category_Furniture": int(category == "Furniture"),
+    "Category_Groceries": int(category == "Groceries"),
+    "Category_Toys": int(category == "Toys"),
+    "Region_North": int(region == "North"),
+    "Region_South": int(region == "South"),
+    "Region_West": int(region == "West"),
+}
+
+
+# 4. Prediction helper with input and output validation
+def predict_demand(data_rows):
+    input_frame = pd.DataFrame(data_rows)
+
+    missing_features = [
+        feature for feature in features
+        if feature not in input_frame.columns
+    ]
+
+    if missing_features:
+        raise ValueError(
+            "Missing model features: " + ", ".join(missing_features)
+        )
+
+    input_frame = input_frame[features]
+    predictions = np.asarray(model.predict(input_frame), dtype=float)
+
+    if not np.isfinite(predictions).all():
+        raise ValueError("The model returned an invalid prediction.")
+
+    return predictions
+
+
+# 5. Predict demand and compare promotion scenarios
 if submitted:
-    input_data = {
-        "Competitor Pricing": competitor_pricing,
-        "Promotion": promotion,
-        "Inventory Level": inventory_level,
-        "Seasonality_Spring": int(seasonality == "Spring"),
-        "Seasonality_Summer": int(seasonality == "Summer"),
-        "Seasonality_Winter": int(seasonality == "Winter"),
-        "Category_Electronics": int(category == "Electronics"),
-        "Category_Furniture": int(category == "Furniture"),
-        "Category_Groceries": int(category == "Groceries"),
-        "Category_Toys": int(category == "Toys"),
-        "Region_North": int(region == "North"),
-        "Region_South": int(region == "South"),
-        "Region_West": int(region == "West"),
-    }
+    try:
+        prediction = predict_demand([input_data])[0]
 
-    # Predict demand for the selected promotion setting
-    input_df = pd.DataFrame([input_data])[features]
-    prediction = model.predict(input_df)[0]
+        st.success(f"Estimated Demand: {prediction:.2f} units")
 
-    st.success(f"Estimated Demand: {prediction:.2f} units")
+        st.caption(
+            "This is a model-based estimate, not a guaranteed sales outcome."
+        )
 
-    # Compare predictions with promotion off and on
-    no_promotion_data = input_data.copy()
-    no_promotion_data["Promotion"] = 0
+        no_promotion_data = input_data.copy()
+        no_promotion_data["Promotion"] = 0
 
-    promotion_data = input_data.copy()
-    promotion_data["Promotion"] = 1
+        promotion_data = input_data.copy()
+        promotion_data["Promotion"] = 1
 
-    comparison_df = pd.DataFrame(
-        [no_promotion_data, promotion_data]
-    )[features]
+        comparison_predictions = predict_demand(
+            [no_promotion_data, promotion_data]
+        )
 
-    comparison_predictions = model.predict(comparison_df)
+        chart_df = pd.DataFrame({
+            "Scenario": ["No Promotion", "Promotion Active"],
+            "Predicted Demand": comparison_predictions
+        }).set_index("Scenario")
 
-    chart_df = pd.DataFrame({
-        "Scenario": ["No Promotion", "Promotion Active"],
-        "Predicted Demand": comparison_predictions
-    }).set_index("Scenario")
+        st.subheader("Promotion Impact: Predicted Demand")
+        st.bar_chart(chart_df)
 
-    st.subheader("Promotion Impact: Predicted Demand")
-    st.bar_chart(chart_df)
+        difference = (
+            comparison_predictions[1] - comparison_predictions[0]
+        )
 
-    difference = comparison_predictions[1] - comparison_predictions[0]
-    st.metric(
-        "Predicted Demand Difference",
-        f"{difference:.2f} units",
-        help="Promotion-active prediction minus no-promotion prediction."
-    )
+        st.metric(
+            "Predicted Demand Difference",
+            f"{difference:.2f} units",
+            help="Promotion-active prediction minus no-promotion prediction."
+        )
 
-    st.caption(
-        "This chart compares model predictions. The difference is not "
-        "proof that a promotion causes demand to change by this amount."
-    )
+        st.caption(
+            "This chart compares model predictions. The difference is not "
+            "proof that a promotion causes demand to change by this amount."
+        )
+
+    except Exception as exc:
+        st.error(f"Could not calculate demand prediction: {exc}")
 
 
-# Price Scenario Comparison
+# 6. Competitor pricing scenario comparison
 st.header("2. Competitor Pricing vs. Predicted Demand")
 
 st.write(
@@ -241,59 +220,110 @@ number_of_scenarios = st.slider(
 )
 
 if st.button("Compare Price Scenarios"):
-    scenario_prices = [
-        round(float(price), 2)
-        for price in pd.Series(
-            [
-                price_range[0]
-                + i * (price_range[1] - price_range[0])
-                / (number_of_scenarios - 1)
-                for i in range(number_of_scenarios)
+    try:
+        scenario_prices = np.linspace(
+            price_range[0],
+            price_range[1],
+            number_of_scenarios
+        ).round(2).tolist()
+
+        scenario_inputs = []
+
+        for price in scenario_prices:
+            scenario = input_data.copy()
+            scenario["Competitor Pricing"] = float(price)
+            scenario_inputs.append(scenario)
+
+        scenario_predictions = predict_demand(scenario_inputs)
+
+        price_comparison_df = pd.DataFrame({
+            "Competitor Pricing": scenario_prices,
+            "Predicted Demand": scenario_predictions
+        })
+
+        st.subheader("Predicted Demand Across Pricing Scenarios")
+
+        st.line_chart(
+            price_comparison_df.set_index("Competitor Pricing")[
+                "Predicted Demand"
             ]
         )
-    ]
 
-    scenario_inputs = []
+        st.dataframe(
+            price_comparison_df,
+            width="stretch"
+        )
 
-    for price in scenario_prices:
-        scenario = input_data.copy() if submitted else {
-            "Competitor Pricing": competitor_pricing,
-            "Promotion": promotion,
-            "Inventory Level": inventory_level,
-            "Seasonality_Spring": int(seasonality == "Spring"),
-            "Seasonality_Summer": int(seasonality == "Summer"),
-            "Seasonality_Winter": int(seasonality == "Winter"),
-            "Category_Electronics": int(category == "Electronics"),
-            "Category_Furniture": int(category == "Furniture"),
-            "Category_Groceries": int(category == "Groceries"),
-            "Category_Toys": int(category == "Toys"),
-            "Region_North": int(region == "North"),
-            "Region_South": int(region == "South"),
-            "Region_West": int(region == "West"),
-        }
+        st.caption(
+            "These are model predictions under different competitor-pricing "
+            "inputs. They do not establish the causal effect of your own "
+            "product's selling price."
+        )
 
-        scenario["Competitor Pricing"] = price
-        scenario_inputs.append(scenario)
+    except Exception as exc:
+        st.error(f"Could not compare pricing scenarios: {exc}")
 
-    scenario_df = pd.DataFrame(scenario_inputs)[features]
-    scenario_predictions = model.predict(scenario_df)
 
-    price_comparison_df = pd.DataFrame({
-        "Competitor Pricing": scenario_prices,
-        "Predicted Demand": scenario_predictions
-    })
+# 7. Double Machine Learning results
+st.header("3. Double Machine Learning (DML) Price Effect")
 
-    st.subheader("Predicted Demand Across Pricing Scenarios")
-    st.line_chart(
-        price_comparison_df.set_index("Competitor Pricing")[
-            "Predicted Demand"
+required_columns = [
+    "Estimated_Price_Effect",
+    "Robust_Standard_Error_HC1",
+    "CI_95_Lower",
+    "CI_95_Upper",
+    "Observations",
+    "P_Value"
+]
+
+missing_columns = [
+    column for column in required_columns
+    if column not in dml_results.columns
+]
+
+if missing_columns:
+    st.warning(
+        "DML summary is missing required columns: "
+        + ", ".join(missing_columns)
+    )
+
+else:
+    try:
+        effect = float(dml["Estimated_Price_Effect"])
+        standard_error = float(dml["Robust_Standard_Error_HC1"])
+        ci_lower = float(dml["CI_95_Lower"])
+        ci_upper = float(dml["CI_95_Upper"])
+        observations = int(dml["Observations"])
+        p_value = float(dml["P_Value"])
+
+        values = [
+            effect, standard_error, ci_lower, ci_upper, p_value
         ]
-    )
 
-    st.dataframe(price_comparison_df, use_container_width=True)
+        if not np.isfinite(values).all():
+            raise ValueError("Some DML results contain invalid numbers.")
 
-    st.caption(
-        "These are model predictions under different competitor-pricing "
-        "inputs. They do not establish the causal effect of your own "
-        "product's selling price."
-    )
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric("Estimated Price Effect", f"{effect:.4f}")
+        col2.metric("Robust Standard Error", f"{standard_error:.4f}")
+        col3.metric("Observations", f"{observations:,}")
+
+        st.write(
+            f"**95% Confidence Interval:** "
+            f"{ci_lower:.4f} to {ci_upper:.4f}"
+        )
+
+        if p_value == 0:
+            st.write("**P-value:** Below the CSV's displayed precision")
+        else:
+            st.write(f"**P-value:** {p_value:.6g}")
+
+        st.caption(
+            "Interpretation depends on the data and model assumptions. "
+            "Statistical significance alone does not prove causality. "
+            "This is a dataset-level estimate."
+        )
+
+    except (ValueError, TypeError, OverflowError) as exc:
+        st.warning(f"Could not display the DML results: {exc}")
