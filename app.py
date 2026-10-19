@@ -217,3 +217,83 @@ if submitted:
     )
 
 
+# Price Scenario Comparison
+st.header("2. Competitor Pricing vs. Predicted Demand")
+
+st.write(
+    "Compare predicted demand at different competitor-pricing levels "
+    "while keeping the other selected product and market details unchanged."
+)
+
+price_range = st.slider(
+    "Competitor Pricing Range",
+    min_value=10,
+    max_value=250,
+    value=(50, 200),
+    step=10
+)
+
+number_of_scenarios = st.slider(
+    "Number of Price Scenarios",
+    min_value=3,
+    max_value=10,
+    value=6
+)
+
+if st.button("Compare Price Scenarios"):
+    scenario_prices = [
+        round(float(price), 2)
+        for price in pd.Series(
+            [
+                price_range[0]
+                + i * (price_range[1] - price_range[0])
+                / (number_of_scenarios - 1)
+                for i in range(number_of_scenarios)
+            ]
+        )
+    ]
+
+    scenario_inputs = []
+
+    for price in scenario_prices:
+        scenario = input_data.copy() if submitted else {
+            "Competitor Pricing": competitor_pricing,
+            "Promotion": promotion,
+            "Inventory Level": inventory_level,
+            "Seasonality_Spring": int(seasonality == "Spring"),
+            "Seasonality_Summer": int(seasonality == "Summer"),
+            "Seasonality_Winter": int(seasonality == "Winter"),
+            "Category_Electronics": int(category == "Electronics"),
+            "Category_Furniture": int(category == "Furniture"),
+            "Category_Groceries": int(category == "Groceries"),
+            "Category_Toys": int(category == "Toys"),
+            "Region_North": int(region == "North"),
+            "Region_South": int(region == "South"),
+            "Region_West": int(region == "West"),
+        }
+
+        scenario["Competitor Pricing"] = price
+        scenario_inputs.append(scenario)
+
+    scenario_df = pd.DataFrame(scenario_inputs)[features]
+    scenario_predictions = model.predict(scenario_df)
+
+    price_comparison_df = pd.DataFrame({
+        "Competitor Pricing": scenario_prices,
+        "Predicted Demand": scenario_predictions
+    })
+
+    st.subheader("Predicted Demand Across Pricing Scenarios")
+    st.line_chart(
+        price_comparison_df.set_index("Competitor Pricing")[
+            "Predicted Demand"
+        ]
+    )
+
+    st.dataframe(price_comparison_df, use_container_width=True)
+
+    st.caption(
+        "These are model predictions under different competitor-pricing "
+        "inputs. They do not establish the causal effect of your own "
+        "product's selling price."
+    )
