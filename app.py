@@ -5,17 +5,38 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 API_URL = "http://127.0.0.1:8000/predict"
+# API_URL = "http://127.0.0.1:8001/predict"
 
 
 def predict_demand_api(data):
-    response = requests.post(
-        API_URL,
-        json=data,
-        timeout=10
-    )
-    response.raise_for_status()
-    result = response.json()
-    return result["predicted_demand"]
+    try:
+        response = requests.post(
+            API_URL,
+            json=data,
+            timeout=10
+        )
+
+        response.raise_for_status()
+        result = response.json()
+
+        if "predicted_demand" not in result:
+            raise ValueError("Prediction missing from API response.")
+
+        return result["predicted_demand"]
+
+    except requests.exceptions.Timeout:
+        st.error("The prediction service took too long to respond. Please try again.")
+    except requests.exceptions.ConnectionError:
+        st.error("Cannot connect to the prediction service. Please check whether FastAPI is running.")
+    except requests.exceptions.HTTPError:
+        st.error("The prediction service returned an error. Please try again.")
+    except (ValueError, requests.exceptions.JSONDecodeError):
+        st.error("The prediction service returned an invalid response.")
+    except requests.exceptions.RequestException:
+        st.error("A network error occurred while requesting the prediction.")
+
+    return None
+
 PROJECT_ROOT = Path(__file__).resolve().parent
 MODEL_PATH = PROJECT_ROOT / "models" / "demand_prediction_model.joblib"
 DML_RESULTS_PATH = (
@@ -169,9 +190,13 @@ def predict_demand(data_rows):
 
 
 # 5. Predict demand and compare promotion scenarios
+
 if submitted:
     try:
         prediction = predict_demand_api(api_input)
+
+        if prediction is None:
+            st.stop()
 
         st.success(f"Estimated Demand: {prediction:.2f} units")
 
