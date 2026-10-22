@@ -276,10 +276,29 @@ if st.button("Compare Price Scenarios"):
             ]
         )
 
-        st.dataframe(
-            price_comparison_df,
-            width="stretch"
-        )
+        best_scenario = price_comparison_df.loc[
+            price_comparison_df["Predicted Demand"].idxmax()
+        ]
+
+        worst_scenario = price_comparison_df.loc[
+            price_comparison_df["Predicted Demand"].idxmin()
+        ]
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric(
+                "Highest Predicted Demand",
+                f'{best_scenario["Predicted Demand"]:.2f}',
+                f'Competitor Price: {best_scenario["Competitor Pricing"]:.2f}'
+            )
+
+        with col2:
+            st.metric(
+                "Lowest Predicted Demand",
+                f'{worst_scenario["Predicted Demand"]:.2f}',
+                f'Competitor Price: {worst_scenario["Competitor Pricing"]:.2f}'
+            )
 
         st.caption(
             "These are model predictions under different competitor-pricing "
