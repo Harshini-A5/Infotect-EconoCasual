@@ -23,9 +23,18 @@ def run_model_diagnostics():
     n = len(errors)
 
     # Approximate standard error for the residual regression.
-    variance = np.sum(errors ** 2) / max(n - 1, 1)
-    standard_error = np.sqrt(variance / denominator)
+    # variance = np.sum(errors ** 2) / max(n - 1, 1)
+    # standard_error = np.sqrt(variance / denominator)
+    # Influence-function-based standard error for the DML estimate.
+    score = price_residual * errors
+    score_mean = np.mean(score)
+    score_variance = np.sum((score - score_mean) ** 2) / (n - 1)
 
+    mean_price_residual_squared = denominator / n
+    standard_error = (
+    np.sqrt(score_variance / n)
+    / mean_price_residual_squared
+    )
     ci_lower = effect - 1.96 * standard_error
     ci_upper = effect + 1.96 * standard_error
 
