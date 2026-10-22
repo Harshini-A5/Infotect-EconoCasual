@@ -1,7 +1,7 @@
 
 import numpy as np
 import pandas as pd
-
+from math import erfc, sqrt
 from src.prepare_dml_residuals import prepare_dml_residuals
 from src.model_config import RESULTS_DIR
 
@@ -37,11 +37,16 @@ def run_model_diagnostics():
     )
     ci_lower = effect - 1.96 * standard_error
     ci_upper = effect + 1.96 * standard_error
+    # Approximate z-statistic and two-sided p-value.
+    z_statistic = effect / standard_error
+    p_value = erfc(abs(z_statistic) / sqrt(2))
 
     diagnostics = pd.DataFrame([{
         "Observations": n,
         "Estimated_Price_Effect": effect,
         "Approx_Standard_Error": standard_error,
+        "Approx_Z_Statistic": z_statistic,
+        "Approx_P_Value": p_value,
         "Approx_95CI_Lower": ci_lower,
         "Approx_95CI_Upper": ci_upper,
         "Price_Residual_Std": np.std(price_residual),
