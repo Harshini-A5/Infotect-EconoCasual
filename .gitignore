@@ -21,7 +21,10 @@ data/processed/
 .ipynb_checkpoints/
 
 # Generated reports and model outputs
-reports/results/
+reports/results/*
+!reports/results/effect_stability.csv
+!reports/results/model_sensitivity.csv
+!reports/results/dml_estimate.csv
 
 # Generated plot from the demand evaluation
 reports/figures/actual_vs_predicted_demand.png
@@ -34,3 +37,4 @@ models/
 
 # Generated sensitivity chart
 reports/figures/price_effect_sensitivity.png
+
