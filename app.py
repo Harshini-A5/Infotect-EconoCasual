@@ -260,8 +260,13 @@ if st.button("Compare Price Scenarios"):
 
         price_comparison_df = pd.DataFrame({
             "Competitor Pricing": scenario_prices,
-            "Predicted Demand": scenario_predictions
+            "Predicted Demand": np.round(scenario_predictions, 2),
         })
+
+        price_comparison_df["Demand Difference from First Scenario"] = (
+            price_comparison_df["Predicted Demand"]
+            - price_comparison_df["Predicted Demand"].iloc[0]
+        ).round(2)
 
         st.subheader("Predicted Demand Across Pricing Scenarios")
 
