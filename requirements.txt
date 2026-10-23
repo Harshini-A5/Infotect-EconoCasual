@@ -9,3 +9,5 @@ uvicorn
 
 requests
 streamlit
+joblib
+pydantic
