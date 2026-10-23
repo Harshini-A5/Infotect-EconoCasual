@@ -60,14 +60,16 @@ def home():
     }
 
 
-@app.get("/health")
-def health():
+# @app.get("/debug-model")
+def debug_model():
     return {
-        "status": "ok" if model is not None else "model_not_loaded",
-        "model_loaded": model is not None,
-        "error": MODEL_LOAD_ERROR,
+        "project_root": str(PROJECT_ROOT),
+        "model_path": str(MODEL_PATH),
+        "project_root_exists": PROJECT_ROOT.exists(),
+        "model_exists": MODEL_PATH.exists(),
+        "models_folder_exists": MODEL_PATH.parent.exists(),
+        "root_files": [p.name for p in PROJECT_ROOT.iterdir()],
     }
-
 
 @app.post("/predict")
 def predict_demand(data: DemandInput):
