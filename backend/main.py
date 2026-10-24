@@ -60,7 +60,7 @@ def home():
     }
 
 
-# @app.get("/debug-model")
+@app.get("/debug-model")
 def debug_model():
     return {
         "project_root": str(PROJECT_ROOT),
