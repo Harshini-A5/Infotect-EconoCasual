@@ -4,9 +4,12 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from pathlib import Path
-API_URL = "http://127.0.0.1:8000/predict"
-# API_URL = "http://127.0.0.1:8001/predict"
 
+#API_URL = "http://127.0.0.1:8000/predict"
+# API_URL = "http://127.0.0.1:8001/predict"
+import os
+
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/predict")
 
 def predict_demand_api(data):
     try:
