@@ -58,7 +58,13 @@ def home():
         "message": "Welcome to the EconoCausal API",
         "docs": "/docs",
     }
-
+@app.get("/health")
+def health():
+    return {
+        "status": "ok" if model is not None else "model_not_loaded",
+        "model_loaded": model is not None,
+        "error": MODEL_LOAD_ERROR,
+    }
 
 @app.get("/debug-model")
 def debug_model():
