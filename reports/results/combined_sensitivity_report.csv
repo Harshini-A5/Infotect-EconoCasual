@@ -1,0 +1,7 @@
+Analysis_Type,Trees,Min_Samples_Leaf,Estimated_Price_Effect,Sample,Observations
+Model Configuration,100.0,5.0,0.9353362214831712,,
+Model Configuration,100.0,10.0,0.9215258747891892,,
+Model Configuration,100.0,20.0,0.8965812390885808,,
+Sample Stability,,,0.9215258747891892,Full dataset,76000.0
+Sample Stability,,,0.910324613082502,Sample 80% A,60800.0
+Sample Stability,,,0.9069249823504344,Sample 80% B,60800.0

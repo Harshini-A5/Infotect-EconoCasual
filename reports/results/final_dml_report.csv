@@ -1,0 +1,2 @@
+Estimated_Price_Effect,Residual_Price_Variance,Residual_Demand_Std,Observations_estimate,Observations_diagnostics,Approx_Standard_Error,Approx_95CI_Lower,Approx_95CI_Upper,Price_Residual_Std,Demand_Residual_Std
+0.9215258747891892,63.73359487586412,35.00237110262118,76000,76000,0.0155488319022841,0.8910501642607124,0.9520015853176664,7.983332316511954,35.00237110262118

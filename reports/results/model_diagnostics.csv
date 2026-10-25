@@ -1,0 +1,2 @@
+Observations,Estimated_Price_Effect,Approx_Standard_Error,Approx_Z_Statistic,Approx_P_Value,Approx_Log_P_Value,Approx_95CI_Lower,Approx_95CI_Upper,Price_Residual_Std,Demand_Residual_Std
+76000,0.9215258747891896,0.014499975799094343,63.553614678911906,0.0,-2023.908892034941,0.8931059222229647,0.9499458273554144,7.983332316511954,35.00237110262118
