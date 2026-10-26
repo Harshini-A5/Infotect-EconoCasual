@@ -88,3 +88,13 @@ The estimated price effect is based on observational data. Its causal interpreta
 ## Project Status
 
 Initial data preparation, feature engineering, and DML model development are in progress.
+
+## Deployment
+
+The EconoCausal application is deployed online using Render.
+
+- **Dashboard:** https://econocausal-dashboard.onrender.com
+- **Backend API:** https://econocausal-api.onrender.com
+- **Source Code:** https://github.com/Harshini-A5/Infotect-EconoCasual
+
+The Streamlit dashboard allows users to explore demand predictions and view the available Double Machine Learning analysis results.
