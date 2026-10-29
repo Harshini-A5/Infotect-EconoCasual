@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
+from pathlib import Path
 from src.model_config import (
     DATA_PATH,
     OUTCOME,
@@ -46,7 +46,20 @@ def evaluate_demand_model():
     print(f"MAE: {mae:.4f}")
     print(f"RMSE: {rmse:.4f}")
     print(f"R² score: {r2:.4f}")
+    results_dir = Path("reports/results")
+    results_dir.mkdir(parents=True, exist_ok=True)
 
+    evaluation_results = pd.DataFrame([{
+        "Test_Observations": len(y_test),
+        "MAE": mae,
+        "RMSE": rmse,
+        "R2_Score": r2,
+    }])
+
+    output_path = results_dir / "demand_model_evaluation.csv"
+    evaluation_results.to_csv(output_path, index=False)
+
+    print(f"Evaluation report saved to: {output_path}")
 
 if __name__ == "__main__":
     evaluate_demand_model()
