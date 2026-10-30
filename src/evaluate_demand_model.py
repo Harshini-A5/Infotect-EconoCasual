@@ -60,6 +60,9 @@ def evaluate_demand_model():
     evaluation_results.to_csv(output_path, index=False)
 
     print(f"Evaluation report saved to: {output_path}")
-
+    print("\nMetric interpretation:")
+    print(f"- MAE: predictions differ from actual demand by {mae:.2f} units on average.")
+    print(f"- RMSE: typical error scale is approximately {rmse:.2f} units, with larger errors penalized more.")
+    print(f"- R2 score: the model explains {r2 * 100:.2f}% of the variation in the test data.")
 if __name__ == "__main__":
     evaluate_demand_model()
