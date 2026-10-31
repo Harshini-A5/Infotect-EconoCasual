@@ -39,7 +39,18 @@ def evaluate_price_model():
     mae = mean_absolute_error(y_test, predictions)
     rmse = mean_squared_error(y_test, predictions) ** 0.5
     r2 = r2_score(y_test, predictions)
+    feature_importance = pd.DataFrame({
+        "Feature": X.columns,
+        "Importance": model.feature_importances_,
+    })
 
+    feature_importance = feature_importance.sort_values(
+        by="Importance",
+        ascending=False,
+    )
+
+    print("\nTop 10 features influencing price prediction:")
+    print(feature_importance.head(10).to_string(index=False))
     print("Price model evaluation completed.")
     print(f"Test observations: {len(y_test)}")
     print(f"MAE: {mae:.4f}")
