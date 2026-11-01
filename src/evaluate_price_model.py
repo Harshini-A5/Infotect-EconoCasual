@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
+from pathlib import Path
 from src.model_config import (
     DATA_PATH,
     TREATMENT,
@@ -39,6 +39,7 @@ def evaluate_price_model():
     mae = mean_absolute_error(y_test, predictions)
     rmse = mean_squared_error(y_test, predictions) ** 0.5
     r2 = r2_score(y_test, predictions)
+
     feature_importance = pd.DataFrame({
         "Feature": X.columns,
         "Importance": model.feature_importances_,
@@ -51,12 +52,17 @@ def evaluate_price_model():
 
     print("\nTop 10 features influencing price prediction:")
     print(feature_importance.head(10).to_string(index=False))
-    print("Price model evaluation completed.")
+
+    report_path = Path("reports/results/price_model_feature_importance.csv")
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    feature_importance.to_csv(report_path, index=False)
+
+    print(f"\nFeature importance report saved to: {report_path}")
+    print("\nPrice model evaluation completed.")
     print(f"Test observations: {len(y_test)}")
     print(f"MAE: {mae:.4f}")
     print(f"RMSE: {rmse:.4f}")
-    print(f"R² score: {r2:.4f}")
-
+    print(f"R2 score: {r2:.4f}")
 
 if __name__ == "__main__":
     evaluate_price_model()
