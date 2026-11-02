@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from typing import Literal
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODEL_PATH = PROJECT_ROOT / "models" / "demand_prediction_model.joblib"
@@ -44,12 +45,12 @@ else:
 
 
 class DemandInput(BaseModel):
-    competitor_pricing: float = Field(ge=0)
+    competitor_pricing: float = Field(ge=0, allow_inf_nan=False)
     promotion: int = Field(ge=0, le=1)
     inventory_level: int = Field(ge=0)
-    seasonality: str
-    category: str
-    region: str
+    seasonality: Literal["Autumn", "Spring", "Summer", "Winter"]
+    category: Literal["Electronics", "Furniture", "Groceries", "Toys"]
+    region: Literal["North", "South", "West"]
 
 
 @app.get("/")
@@ -85,19 +86,7 @@ def predict_demand(data: DemandInput):
             detail=f"Demand model is unavailable: {MODEL_LOAD_ERROR}",
         )
 
-    valid_seasons = {"Autumn", "Spring", "Summer", "Winter"}
-    valid_categories = {"Electronics", "Furniture", "Groceries", "Toys"}
-    valid_regions = {"North", "South", "West"}
-
-    if data.seasonality not in valid_seasons:
-        raise HTTPException(status_code=422, detail="Invalid seasonality value.")
-
-    if data.category not in valid_categories:
-        raise HTTPException(status_code=422, detail="Invalid category value.")
-
-    if data.region not in valid_regions:
-        raise HTTPException(status_code=422, detail="Invalid region value.")
-
+    
     input_data = {
         "Competitor Pricing": data.competitor_pricing,
         "Promotion": data.promotion,
