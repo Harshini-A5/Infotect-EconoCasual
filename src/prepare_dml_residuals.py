@@ -22,7 +22,22 @@ def prepare_dml_residuals():
 
     if missing:
         raise ValueError(f"Missing columns: {missing}")
+    if len(df) < 5:
+        raise ValueError(
+            "At least 5 rows are required for 5-fold cross-validation."
+        )
 
+    if df[required].isnull().any().any():
+        raise ValueError(
+            "DML input data contains missing values in required columns."
+        )
+
+    numeric_data = df[required].apply(pd.to_numeric, errors="coerce")
+
+    if not np.isfinite(numeric_data.to_numpy()).all():
+        raise ValueError(
+            "DML input data contains non-numeric or non-finite values."
+        )
     X = df[CONFOUNDERS]
     price = df[TREATMENT]
     demand = df[OUTCOME]
