@@ -11,34 +11,6 @@ import os
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/predict")
 
-def predict_demand_api(data):
-    try:
-        response = requests.post(
-            API_URL,
-            json=data,
-            timeout=10
-        )
-
-        response.raise_for_status()
-        result = response.json()
-
-        if "predicted_demand" not in result:
-            raise ValueError("Prediction missing from API response.")
-
-        return result["predicted_demand"]
-
-    except requests.exceptions.Timeout:
-        st.error("The prediction service took too long to respond. Please try again.")
-    except requests.exceptions.ConnectionError:
-        st.error("Cannot connect to the prediction service. Please check whether FastAPI is running.")
-    except requests.exceptions.HTTPError:
-        st.error("The prediction service returned an error. Please try again.")
-    except (ValueError, requests.exceptions.JSONDecodeError):
-        st.error("The prediction service returned an invalid response.")
-    except requests.exceptions.RequestException:
-        st.error("A network error occurred while requesting the prediction.")
-
-    return None
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 MODEL_PATH = PROJECT_ROOT / "models" / "demand_prediction_model.joblib"
@@ -51,13 +23,43 @@ st.set_page_config(
     page_icon="📊",
     layout="wide"
 )
-
 st.title("EconoCausal")
 st.subheader("Dynamic Pricing and Demand Analysis")
 st.write(
     "Explore predicted demand and the price-effect estimate "
     "calculated using Double Machine Learning (DML)."
 )
+
+def predict_demand_api(data):
+    try:
+        response = requests.post(
+            API_URL,
+            json=data,
+            timeout=60
+        )
+
+        response.raise_for_status()
+        result = response.json()
+
+        if "predicted_demand" not in result:
+            raise ValueError("Prediction missing from API response.")
+
+        return result["predicted_demand"]
+
+    except requests.exceptions.Timeout:
+        st.error("The prediction service took too long to respond.")
+    except requests.exceptions.ConnectionError:
+        st.error("Cannot connect to the prediction service.")
+    except requests.exceptions.HTTPError as e:
+        status_code = e.response.status_code if e.response is not None else "Unknown"
+        error_detail = e.response.text[:500] if e.response is not None else str(e)
+        st.error(f"API Error ({status_code}): {error_detail}")
+    except (ValueError, requests.exceptions.JSONDecodeError) as e:
+        st.error(f"Invalid API response: {e}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Network error: {e}")
+
+    return None
 
 
 # 1. Load the trained demand prediction model
