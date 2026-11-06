@@ -42,177 +42,334 @@ API_URL = os.getenv(
 st.markdown(
     """
     <style>
-    @import url(
-        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
-    );
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --navy: #102a43;
+        --navy-2: #173f5f;
+        --blue: #246b9e;
+        --blue-soft: #eaf3fa;
+        --ink: #172b3a;
+        --muted: #647789;
+        --line: #e2e9f0;
+        --surface: #ffffff;
+        --canvas: #f5f7fa;
+    }
 
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
 
     .stApp {
-        background: #f4f7fb;
+        background: var(--canvas);
+        color: var(--ink);
     }
 
     [data-testid="stHeader"] {
-        background: rgba(244,247,251,0.95);
+        background: rgba(245, 247, 250, 0.96);
     }
 
     .block-container {
-        max-width: 1500px;
-        padding-top: 1.7rem;
-        padding-bottom: 3rem;
+        max-width: 1440px;
+        padding-top: 1.35rem;
+        padding-bottom: 2.5rem;
     }
 
+    /* Sidebar */
     [data-testid="stSidebar"] {
         background: #102a43;
+        border-right: 1px solid rgba(255,255,255,0.08);
+    }
+
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 1.5rem;
     }
 
     [data-testid="stSidebar"] * {
-        color: #ffffff;
+        color: #edf4fa;
     }
 
     .brand {
-        padding: 12px 5px 25px 5px;
+        padding: 9px 7px 23px 7px;
     }
 
     .brand-name {
-        font-size: 25px;
+        font-size: 23px;
         font-weight: 800;
-        color: white;
+        letter-spacing: -0.7px;
+        color: #ffffff;
     }
 
     .brand-subtitle {
-        color: #b9ccdc;
-        font-size: 12px;
-        margin-top: 5px;
+        color: #b8cbd9;
+        font-size: 11px;
+        letter-spacing: 0.35px;
+        margin-top: 6px;
     }
 
+    [data-testid="stSidebar"] [data-testid="stRadio"] > label {
+        color: #a9bfd0;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        margin-bottom: 10px;
+    }
+
+    [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] {
+        gap: 6px;
+    }
+
+    [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label {
+        border-radius: 8px;
+        padding: 9px 11px;
+        transition: background 0.15s ease;
+    }
+
+    [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:hover {
+        background: rgba(255,255,255,0.09);
+    }
+
+    [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {
+        background: #245779;
+        border-left: 3px solid #80c4ee;
+    }
+
+    [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label p {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    [data-testid="stSidebar"] hr {
+        border-color: rgba(255,255,255,0.14);
+    }
+
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+        color: #9fb5c7;
+        font-size: 10px;
+        letter-spacing: 0.8px;
+        font-weight: 700;
+    }
+
+    /* Main page header */
     .hero {
-        background: linear-gradient(
-            115deg,
-            #102a43,
-            #174a70,
-            #2878a8
-        );
-        padding: 30px;
-        border-radius: 18px;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(112deg, #102a43 0%, #174a70 62%, #236b96 100%);
+        padding: 30px 34px;
+        border-radius: 15px;
         color: white;
-        margin-bottom: 25px;
+        margin-bottom: 27px;
+        box-shadow: 0 8px 24px rgba(16,42,67,0.12);
+    }
+
+    .hero:after {
+        content: "";
+        position: absolute;
+        width: 230px;
+        height: 230px;
+        right: -65px;
+        top: -125px;
+        border: 1px solid rgba(255,255,255,0.13);
+        border-radius: 50%;
+        box-shadow: 0 0 0 24px rgba(255,255,255,0.035),
+                    0 0 0 50px rgba(255,255,255,0.025);
+    }
+
+    .hero-eyebrow {
+        color: #b9d8ec;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        margin-bottom: 9px;
     }
 
     .hero h1 {
-        color: white;
-        font-size: 30px;
+        color: #ffffff;
+        font-size: clamp(24px, 3vw, 31px);
         font-weight: 800;
-        margin-bottom: 7px;
+        letter-spacing: -0.9px;
+        line-height: 1.2;
+        margin: 0 0 9px 0;
     }
 
     .hero p {
-        color: #e1edf7;
-        font-size: 14px;
-        margin-bottom: 0;
+        color: #dceaf4;
+        font-size: 12px;
+        line-height: 1.6;
+        margin: 0;
+        max-width: 760px;
     }
 
+    /* Page hierarchy */
     .page-heading {
-        font-size: 25px;
+        font-size: 24px;
         font-weight: 750;
-        color: #17324d;
+        letter-spacing: -0.55px;
+        color: var(--navy);
         margin-bottom: 5px;
     }
 
     .page-description {
-        color: #718096;
-        font-size: 13px;
-        margin-bottom: 22px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+        margin-bottom: 21px;
     }
 
     .section-heading {
-        font-size: 19px;
+        font-size: 17px;
         font-weight: 700;
-        color: #17324d;
-        margin-top: 18px;
-        margin-bottom: 12px;
+        letter-spacing: -0.25px;
+        color: var(--navy);
+        margin-top: 19px;
+        margin-bottom: 13px;
     }
 
+    h3, h4 {
+        color: var(--navy) !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.25px !important;
+    }
+
+    /* KPI cards */
     div[data-testid="stMetric"] {
-        background: white;
-        border: 1px solid #e5eaf1;
-        padding: 18px;
-        border-radius: 13px;
-        box-shadow: 0 3px 10px rgba(16,42,67,0.04);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        padding: 17px 18px;
+        min-height: 98px;
+        box-shadow: 0 2px 7px rgba(16,42,67,0.035);
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
+    }
+
+    div[data-testid="stMetric"]:hover {
+        box-shadow: 0 5px 15px rgba(16,42,67,0.075);
+        transform: translateY(-1px);
     }
 
     div[data-testid="stMetric"] label {
-        color: #687b8e;
-        font-weight: 600;
-        font-size: 13px;
+        color: var(--muted) !important;
+        font-weight: 600 !important;
+        font-size: 11px !important;
     }
 
     div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #17324d;
-        font-weight: 750;
+        color: var(--navy) !important;
+        font-weight: 750 !important;
+        font-size: clamp(19px, 2vw, 25px) !important;
+        letter-spacing: -0.6px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
     }
 
+    div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
+        font-size: 11px;
+    }
+
+    /* Content surfaces */
     div[data-testid="stForm"] {
-        background: white;
-        border: 1px solid #e5eaf1;
-        border-radius: 14px;
-        padding: 22px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        padding: 22px 23px;
+        box-shadow: 0 2px 8px rgba(16,42,67,0.025);
+    }
+
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stNumberInput"] input,
+    div[data-testid="stSelectbox"] > div > div {
+        border-radius: 7px;
     }
 
     div.stButton > button,
     div[data-testid="stFormSubmitButton"] > button {
-        background: #174a70;
+        background: var(--navy-2);
         color: white;
-        border: none;
-        border-radius: 8px;
-        min-height: 43px;
-        font-weight: 600;
+        border: 1px solid var(--navy-2);
+        border-radius: 7px;
+        min-height: 42px;
+        font-size: 13px;
+        font-weight: 650;
+        transition: background 0.15s ease, border-color 0.15s ease;
     }
 
     div.stButton > button:hover,
     div[data-testid="stFormSubmitButton"] > button:hover {
-        background: #2878a8;
+        background: var(--blue);
         color: white;
-        border: none;
+        border-color: var(--blue);
     }
 
     div[data-testid="stDataFrame"] {
-        border: 1px solid #e5eaf1;
-        border-radius: 10px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        overflow: hidden;
     }
 
+    div[data-testid="stAlert"] {
+        border-radius: 9px;
+    }
+
+    /* Insight cards */
     .insight-card {
-        background: white;
-        padding: 20px;
-        border: 1px solid #e5eaf1;
-        border-radius: 13px;
-        margin-bottom: 12px;
+        background: var(--surface);
+        padding: 17px 19px;
+        border: 1px solid var(--line);
+        border-left: 3px solid #5b9bc4;
+        border-radius: 9px;
+        margin-bottom: 11px;
+        box-shadow: 0 2px 7px rgba(16,42,67,0.025);
     }
 
     .insight-title {
-        color: #174a70;
+        color: var(--navy-2);
         font-weight: 700;
-        font-size: 15px;
+        font-size: 12px;
+        letter-spacing: 0.1px;
         margin-bottom: 6px;
     }
 
     .insight-text {
-        color: #607387;
-        font-size: 13px;
-        line-height: 1.6;
+        color: #5d7081;
+        font-size: 11px;
+        line-height: 1.65;
+    }
+
+    /* Charts and separators */
+    [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] hr {
+        border-color: var(--line);
+        margin-top: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    [data-testid="stCaptionContainer"] p {
+        color: #8291a0;
+        font-size: 10px;
+        line-height: 1.5;
     }
 
     .footer {
-        color: #8493a3;
+        color: #8795a3;
         text-align: center;
-        font-size: 12px;
-        padding-top: 35px;
+        font-size: 10px;
+        padding-top: 30px;
+        letter-spacing: 0.15px;
     }
 
-    hr {
-        border-color: #e5eaf1;
+    @media (max-width: 800px) {
+        .block-container {
+            padding-top: 1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .hero {
+            padding: 23px 22px;
+        }
+        div[data-testid="stMetric"] {
+            padding: 13px;
+            min-height: 86px;
+        }
     }
     </style>
     """,
@@ -472,10 +629,11 @@ with st.sidebar:
 st.markdown(
     """
     <div class="hero">
-        <h1>Dynamic Pricing & Demand Analytics</h1>
+        <div class="hero-eyebrow">EconoCausal Analytics Platform</div>
+        <h1>Dynamic Pricing &amp; Demand Analytics</h1>
         <p>
-            Understand demand patterns, explore pricing scenarios,
-            and discover causal insights using machine learning.
+            Understand demand patterns, evaluate pricing scenarios,
+            and explore causal evidence with machine learning.
         </p>
     </div>
     """,
@@ -637,10 +795,9 @@ if page == "Overview":
             f"{st.session_state.last_prediction:.2f} units",
         )
 
-        if st.session_state.last_prediction is not None:
-            st.caption(
-                "This value comes from your most recent successful prediction."
-            )
+        st.caption(
+            "This value comes from your most recent successful prediction."
+        )
 
     else:
 
@@ -1077,10 +1234,10 @@ elif page == "Causal Insights":
         "Observations",
         f"{observations:,}",
     )
+
     # Format p-value for display
     p_value_text = f"{p_value:.2e}" if p_value > 0 else "< 1e-300"
 
-# Causal Insights section
     c4.metric(
         "P-value",
         p_value_text,
