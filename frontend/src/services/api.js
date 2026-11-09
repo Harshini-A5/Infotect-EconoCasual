@@ -1,4 +1,7 @@
-const API_BASE_URL = "/api";
+
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "/api"
+).replace(/\/+$/, "");
 
 export async function checkApiHealth() {
   const response = await fetch(`${API_BASE_URL}/health`);
@@ -42,7 +45,9 @@ export async function predictDemand(inputData) {
     return result;
   } catch (error) {
     if (error.name === "AbortError") {
-      throw new Error("The prediction service took too long to respond. Please try again.");
+      throw new Error(
+        "The prediction service took too long to respond. Please try again."
+      );
     }
 
     throw error;
