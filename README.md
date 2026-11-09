@@ -1,100 +1,118 @@
-# EconoCausal: Dynamic Pricing via Double Machine Learning
+# EconoCausal – Dynamic Pricing via Double Machine Learning
 
-## Overview
+An end-to-end data science project that combines Machine Learning and Double Machine Learning (DML) to study the relationship between product pricing and customer demand.
 
-EconoCausal is a machine learning project that explores the relationship between product pricing and customer demand using Double Machine Learning (DML).
+## Live Demo
 
-The project uses historical sales data and observed factors such as competitor pricing, promotions, inventory, seasonality, product category, and region to estimate the price effect on demand.
+- **React Dashboard:** https://econocausal-react.onrender.com
+- **FastAPI Backend:** https://econocausal-api.onrender.com
 
-## Objectives
+## Project Overview
 
-- Analyze historical sales and pricing data.
-- Prepare and validate data for causal analysis.
-- Build machine learning models for price and demand.
-- Estimate the price–demand relationship using residual-based DML.
-- Evaluate the stability of the estimate and export results.
+EconoCausal helps explore how product prices and market conditions relate to demand. It provides demand predictions, pricing scenario comparisons, and causal-effect insights through an interactive dashboard.
 
-## Technologies
+## Key Features
 
-- Python
-- Pandas and NumPy
-- Scikit-learn
-- Matplotlib
-- Git and GitHub
+- Demand prediction using a trained Machine Learning model.
+- Dynamic pricing scenario analysis across multiple price points.
+- Double Machine Learning for estimating the effect of price on demand.
+- Interactive dashboard built with React.
+- REST API developed using FastAPI.
+- Data exploration, preprocessing, and feature engineering.
+- Visual presentation of model predictions and causal insights.
+
+## Dataset
+
+The project uses a retail dataset containing **76,000 records and 16 original columns**.
+
+Important features include:
+- Product and store information
+- Price and competitor pricing
+- Inventory level
+- Discounts and promotions
+- Weather and seasonality
+- Units sold and demand
+
+Additional features were created during preprocessing to support analysis and modelling.
+
+## Technology Stack
+
+| Area | Technologies |
+|---|---|
+| Programming | Python, JavaScript |
+| Data Analysis | Pandas, NumPy |
+| Machine Learning | Scikit-learn |
+| Causal Inference | Double Machine Learning, Statsmodels |
+| Backend | FastAPI |
+| Frontend | React, Vite |
+| Charts | Recharts |
+| UI Icons | Lucide React |
+| Deployment | Render |
+| Version Control | Git, GitHub |
+
+## Project Modules
+
+1. **Data Preparation:** Cleaning, preprocessing, exploratory data analysis, and feature engineering.
+2. **Demand Prediction:** Predicts demand using the trained ML model.
+3. **Scenario Analysis:** Compares predicted demand across different pricing conditions.
+4. **Causal Insights:** Presents DML-based estimates of the price effect on demand.
+5. **API Integration:** Connects the React dashboard with the FastAPI prediction service.
 
 ## Project Structure
 
 ```text
-Infotect-EconoCasual/
+EconoCausal/
+├── backend/
+│   └── main.py
+├── frontend/
+│   ├── public/
+│   └── src/
 ├── data/
 │   ├── raw/
 │   └── processed/
+├── models/
 ├── reports/
-│   ├── figures/
-│   └── results/
-├── src/
-│   ├── preprocessing.py
-│   ├── feature_engineering.py
-│   ├── prepare_dml_data.py
-│   ├── model_config.py
-│   ├── treatment_model.py
-│   ├── demand_model.py
-│   ├── prepare_dml_residuals.py
-│   ├── dml_estimator.py
-│   ├── model_diagnostics.py
-│   ├── export_results.py
-│   └── effect_stability.py
-├── requirements.txt
+├── notebooks/
+├── app.py
 └── README.md
 ```
 
-## Setup
+## Running Locally
 
-1. Clone the repository.
-2. Create and activate a Python virtual environment.
-3. Install dependencies:
+### Backend
 
 ```bash
-python -m pip install -r requirements.txt
+cd backend
+pip install -r ../requirements.txt
+uvicorn main:app --reload
 ```
 
-4. Place the original dataset at `data/raw/sales_data.csv`.
-5. Run the preprocessing and feature-engineering scripts in the appropriate order.
-6. Run the DML input preparation and estimation scripts.
+### Frontend
 
-## Main Commands
+Open another terminal:
 
 ```bash
-python -m src.preprocessing
-python -m src.feature_engineering
-python -m src.prepare_dml_data
-python -m src.validate_dml_inputs
-python -m src.dml_estimator
-python -m src.model_diagnostics
-python -m src.export_results
-python -m src.effect_stability
+cd frontend
+npm install
+npm run dev
 ```
 
-Run each command only after confirming that its input files exist and its prerequisites have been completed.
-
-## Outputs
-
-The project generates exploratory data visualizations and CSV files containing DML estimates, diagnostics, and stability-check results under `reports/`.
-
-## Important Note
-
-The estimated price effect is based on observational data. Its causal interpretation depends on assumptions, including adequate adjustment for confounding and correct model specification. The estimate should not be treated as proof of causality without further validation.
+Configure the frontend API URL using the environment variable `VITE_API_BASE_URL` when required.
 
 ## Project Status
 
-Initial data preparation, feature engineering, and DML model development are in progress.
+**Deployed successfully.**
 
-## Deployment
+The React dashboard and FastAPI backend are hosted on Render.
 
-The EconoCausal application is deployed online using Render.
+## Author
 
-- **Dashboard:** https://econocausal-dashboard.onrender.com
-- **Backend API:** https://econocausal-api.onrender.com
-- **Source Code:** https://github.com/Harshini-A5/Infotect-EconoCasual
+**S. Harshini**
 
-The Streamlit dashboard allows users to explore demand predictions and view the available Double Machine Learning analysis results.
+B.Tech – Artificial Intelligence and Machine Learning
+
+GitHub: https://github.com/Harshini-A5
+
+---
+
+*This project was developed as a practical application of Machine Learning, causal inference, data analysis, and full-stack development.*
