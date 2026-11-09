@@ -7,6 +7,8 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import Literal
+import os
+from fastapi.middleware.cors import CORSMiddleware
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODEL_PATH = PROJECT_ROOT / "models" / "demand_prediction_model.joblib"
@@ -16,7 +18,29 @@ app = FastAPI(
     description="Demand prediction API for the EconoCausal project",
     version="1.0.0",
 )
+frontend_urls = os.getenv("FRONTEND_URL", "")
 
+allowed_origins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+]
+
+if frontend_urls:
+    allowed_origins.extend(
+        url.strip().rstrip("/")
+        for url in frontend_urls.split(",")
+        if url.strip()
+    )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 def load_model():
     if not MODEL_PATH.exists():
